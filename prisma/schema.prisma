@@ -1,0 +1,85 @@
+// Vigilancia de la Vía — Prisma Schema
+// Generador: prisma-client (Prisma v7)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enumeraciones ─────────────────────────────────────────────────────────────
+
+enum Rol {
+  REPORTANTE
+  RESPONSABLE
+  SUPERVISOR
+}
+
+enum TipoProblema {
+  PIEDRAS_VIA
+  VIA_SIN_AFIRMADO
+  VOLQUETES
+  MUCHA_PENDIENTE
+  SENALIZACION
+  TIEMPO_ESPERA
+  DERRUMBE
+  CAMBIO_TRAZO
+}
+
+enum EstadoReporte {
+  PENDIENTE
+  EN_PROCESO
+  SOLUCIONADO
+}
+
+// ─── Modelos ───────────────────────────────────────────────────────────────────
+
+model Usuario {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  rol         Rol          @default(REPORTANTE)
+  pushToken   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reportes    Reporte[]
+  comunicados Comunicado[]
+
+  @@map("usuarios")
+}
+
+model Reporte {
+  id                   String        @id @default(uuid())
+  tipoProblema         TipoProblema
+  comentario           String?
+  fotoUrl              String?
+  latitud              Float
+  longitud             Float
+  fechaCreacion        DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  estado               EstadoReporte @default(PENDIENTE)
+  comentarioResolucion String?
+  fotoEvidenciaUrl     String?
+  sincronizadoEn       DateTime?
+
+  reportanteId  String
+  reportante    Usuario       @relation(fields: [reportanteId], references: [id])
+
+  @@map("reportes")
+}
+
+model Comunicado {
+  id                  String    @id @default(uuid())
+  mensaje             String
+  fechaPublicacion    DateTime  @default(now())
+  duracionRestriccion Int?
+
+  responsableId       String
+  responsable         Usuario   @relation(fields: [responsableId], references: [id])
+
+  @@map("comunicados")
+}
