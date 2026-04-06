@@ -76,7 +76,7 @@ export class ReportsService {
 
     // REPORTANTE solo puede ver PENDIENTE y EN_PROCESO
     if (isReportante) {
-      const permitidos = [EstadoReporte.PENDIENTE, EstadoReporte.EN_PROCESO];
+      const permitidos = [EstadoReporte.PENDIENTE, EstadoReporte.EN_PROCESO] as EstadoReporte[];
       const estadoFinal = estado && permitidos.includes(estado) ? estado : undefined;
       return this.prisma.reporte.findMany({
         where: { estado: estadoFinal ?? { in: permitidos } },
