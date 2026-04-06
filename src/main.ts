@@ -31,8 +31,6 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
-  console.log(`🚀 Vigilancia de la Vía API →  http://localhost:${port}`);
-  console.log(`📁 Archivos estáticos       →  http://localhost:${port}/uploads/<archivo>`);
 }
 
 bootstrap();
