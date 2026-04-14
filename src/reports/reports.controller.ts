@@ -6,13 +6,11 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Request } from 'express';
 import { EstadoReporte, Rol } from '../../generated/prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -37,10 +35,8 @@ export class ReportsController {
     @Body() dto: CreateReportDto,
     @UploadedFile() foto: Express.Multer.File | undefined,
     @CurrentUser() user: JwtPayload,
-    @Req() req: Request,
   ) {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    return this.reportsService.create(dto, foto, user, baseUrl);
+    return this.reportsService.create(dto, foto, user);
   }
 
   // GET /reports?estado=... — Todos los autenticados; REPORTANTE no ve SOLUCIONADO
@@ -91,9 +87,7 @@ export class ReportsController {
     @Body() dto: UpdateReportStatusDto,
     @UploadedFile() fotoEvidencia: Express.Multer.File | undefined,
     @CurrentUser() user: JwtPayload,
-    @Req() req: Request,
   ) {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    return this.reportsService.updateStatus(id, dto, fotoEvidencia, user, baseUrl);
+    return this.reportsService.updateStatus(id, dto, fotoEvidencia, user);
   }
 }

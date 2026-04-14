@@ -28,10 +28,9 @@ export class ReportsService {
     dto: CreateReportDto,
     foto: Express.Multer.File | undefined,
     usuario: JwtPayload,
-    baseUrl: string,
   ): Promise<Reporte> {
     const fotoUrl = foto
-      ? this.uploadService.buildPublicUrl(foto.filename, baseUrl)
+      ? (foto as any).path
       : undefined;
 
     const { esOffline, ...reportData } = dto;
@@ -123,7 +122,6 @@ export class ReportsService {
     dto: UpdateReportStatusDto,
     fotoEvidencia: Express.Multer.File | undefined,
     usuario: JwtPayload,
-    baseUrl: string,
   ): Promise<Reporte> {
     const reporte = await this.prisma.reporte.findUnique({ where: { id } });
 
@@ -134,7 +132,7 @@ export class ReportsService {
     }
 
     const fotoEvidenciaUrl = fotoEvidencia
-      ? this.uploadService.buildPublicUrl(fotoEvidencia.filename, baseUrl)
+      ? (fotoEvidencia as any).path
       : undefined;
 
     return this.prisma.reporte.update({
