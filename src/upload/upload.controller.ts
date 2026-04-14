@@ -28,25 +28,21 @@ export class UploadController {
    * POST /upload/photo
    *
    * Recibe un archivo en el campo "photo" (multipart/form-data).
-   * Multer lo guarda en /uploads con un nombre único.
-   * Devuelve la URL pública para almacenarla en el campo fotoUrl del Reporte.
+   * Cloudinary lo guarda y devuelve la URL.
    *
    * Ejemplo de respuesta:
    * {
-   *   "url": "http://localhost:3000/uploads/1710000000000-123456.jpg",
-   *   "filename": "1710000000000-123456.jpg"
+   *   "url": "https://res.cloudinary.com/demo/image/upload/v123456789/vigilancia-via/photo-1710000000000-123456.jpg",
+   *   "filename": "vigilancia-via/photo-1710000000000-123456"
    * }
    */
   @Post('photo')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('photo', multerOptions))
   uploadPhoto(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: Request,
+    @UploadedFile() file: any,
   ): UploadPhotoResponse {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const url = this.uploadService.buildPublicUrl(file.filename, baseUrl);
-
-    return { url, filename: file.filename };
+    // Con CloudinaryStorage, file.path contiene la URL segura y file.filename el public_id
+    return { url: file.path, filename: file.filename };
   }
 }
