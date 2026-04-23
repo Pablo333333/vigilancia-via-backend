@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EstadoReporte, Reporte, Rol } from '../../generated/prisma/client';
+import { EstadoReporte, Prisma, Reporte, Rol } from '../../generated/prisma/client';
 import type { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -27,7 +27,7 @@ export class ReportsService {
   async create(
     dto: CreateReportDto,
     foto: Express.Multer.File | undefined,
-    usuario: JwtPayload,
+    usuario?: JwtPayload,
   ): Promise<Reporte> {
     const fotoUrl = foto
       ? (foto as any).path
@@ -35,14 +35,17 @@ export class ReportsService {
 
     const { esOffline, ...reportData } = dto;
 
-    const reporte = await this.prisma.reporte.create({
-      data: {
-        ...reportData,
-        fotoUrl,
-        reportanteId: usuario.sub,
-        ...(esOffline && { sincronizadoEn: new Date() }),
-      },
-    });
+    const data: Prisma.ReporteCreateInput = {
+      ...reportData,
+      fotoUrl,
+      ...(esOffline && { sincronizadoEn: new Date() }),
+    } as any;
+
+    if (usuario?.sub) {
+      data.reportante = { connect: { id: usuario.sub } };
+    }
+
+    const reporte = await this.prisma.reporte.create({ data });
 
     // Notificar en segundo plano — no bloquea la respuesta al cliente
     this.notifyResponsables(reporte.id, dto.tipoProblema).catch(() => null);

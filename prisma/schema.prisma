@@ -66,8 +66,8 @@ model Reporte {
   fotoEvidenciaUrl     String?
   sincronizadoEn       DateTime?
 
-  reportanteId  String
-  reportante    Usuario       @relation(fields: [reportanteId], references: [id])
+  reportanteId  String?
+  reportante    Usuario?      @relation(fields: [reportanteId], references: [id])
 
   @@map("reportes")
 }

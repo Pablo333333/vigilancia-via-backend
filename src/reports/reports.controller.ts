@@ -22,25 +22,24 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportStatusDto } from './dto/update-report-status.dto';
 import { ReportsService } from './reports.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  // POST /reports — Cualquier usuario autenticado puede crear reportes
+  // POST /reports — Usuarios autenticados o Invitados (Anónimos)
   @Post()
-  @Roles(Rol.REPORTANTE, Rol.RESPONSABLE, Rol.SUPERVISOR)
   @UseInterceptors(FileInterceptor('foto', multerOptions))
   create(
     @Body() dto: CreateReportDto,
     @UploadedFile() foto: Express.Multer.File | undefined,
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user?: JwtPayload,
   ) {
     return this.reportsService.create(dto, foto, user);
   }
 
   // GET /reports?estado=... — Todos los autenticados; REPORTANTE no ve SOLUCIONADO
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   findAll(
     @Query('estado') estado?: EstadoReporte,
     @CurrentUser() user?: JwtPayload,
@@ -50,6 +49,7 @@ export class ReportsController {
 
   // GET /reports/mine — Solo REPORTANTE: sus propios reportes
   @Get('mine')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Rol.REPORTANTE)
   findMine(@CurrentUser() user: JwtPayload) {
     return this.reportsService.findMine(user.sub);
@@ -62,6 +62,7 @@ export class ReportsController {
    * Restringido a RESPONSABLE y SUPERVISOR — devuelve 403 para REPORTANTE.
    */
   @Get('stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Rol.RESPONSABLE, Rol.SUPERVISOR)
   getStats() {
     return this.reportsService.getStats();
@@ -69,6 +70,7 @@ export class ReportsController {
 
   // GET /reports/:id
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   findOne(@Param('id') id: string) {
     return this.reportsService.findOne(id);
   }
@@ -80,6 +82,7 @@ export class ReportsController {
    * SUPERVISOR tiene perfil de solo lectura — 403 si intenta usar este endpoint.
    */
   @Patch(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Rol.RESPONSABLE)
   @UseInterceptors(FileInterceptor('fotoEvidencia', multerOptions))
   updateStatus(
