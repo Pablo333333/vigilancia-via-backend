@@ -27,9 +27,9 @@ import { ReportsService } from './reports.service';
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  // POST /reports — Solo REPORTANTE puede crear reportes
+  // POST /reports — Cualquier usuario autenticado puede crear reportes
   @Post()
-  @Roles(Rol.REPORTANTE)
+  @Roles(Rol.REPORTANTE, Rol.RESPONSABLE, Rol.SUPERVISOR)
   @UseInterceptors(FileInterceptor('foto', multerOptions))
   create(
     @Body() dto: CreateReportDto,
