@@ -3,8 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EstadoReporte, Prisma, Reporte, Rol } from '../../generated/prisma/client';
+import { EstadoReporte, Prisma, Reporte, Rol } from '@prisma/client';
 import type { JwtPayload } from '../auth/strategies/jwt.strategy';
+import { MailService } from '../mail/mail.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
@@ -17,6 +18,7 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly uploadService: UploadService,
     private readonly notificationsService: NotificationsService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -45,12 +47,39 @@ export class ReportsService {
       data.reportante = { connect: { id: usuario.sub } };
     }
 
-    const reporte = await this.prisma.reporte.create({ data });
+    const reporte = await this.prisma.reporte.create({ 
+      data,
+      include: { reportante: true }
+    });
+
+    // Auditoría inicial
+    await this.prisma.auditLog.create({
+      data: {
+        reporteId: reporte.id,
+        usuarioId: usuario?.sub,
+        estadoNuevo: EstadoReporte.PENDIENTE,
+        comentario: 'Reporte creado',
+      },
+    });
 
     // Notificar en segundo plano — no bloquea la respuesta al cliente
     this.notifyResponsables(reporte.id, dto.tipoProblema).catch(() => null);
 
+    // Enviar correo a los responsables para TODOS los reportes
+    this.sendNewReportEmails(reporte).catch(() => null);
+
     return reporte;
+  }
+
+  private async sendNewReportEmails(reporte: any) {
+    const responsables = await this.prisma.usuario.findMany({
+      where: { rol: Rol.RESPONSABLE },
+      select: { email: true },
+    });
+
+    for (const resp of responsables) {
+      await this.mailService.sendNewReportEmail(resp.email, reporte);
+    }
   }
 
   private async notifyResponsables(reporteId: string, tipoProblema: string): Promise<void> {
@@ -112,7 +141,13 @@ export class ReportsService {
   async findOne(id: string): Promise<Reporte> {
     const reporte = await this.prisma.reporte.findUnique({
       where: { id },
-      include: { reportante: { omit: { password: true } } },
+      include: { 
+        reportante: { omit: { password: true } },
+        auditLogs: {
+          include: { usuario: { select: { email: true, rol: true } } },
+          orderBy: { fecha: 'desc' }
+        }
+      },
     });
 
     if (!reporte) throw new NotFoundException(`Reporte con id ${id} no encontrado`);
@@ -138,7 +173,7 @@ export class ReportsService {
       ? (fotoEvidencia as any).path
       : undefined;
 
-    return this.prisma.reporte.update({
+    const updatedReporte = await this.prisma.reporte.update({
       where: { id },
       data: {
         estado: dto.estado,
@@ -146,6 +181,19 @@ export class ReportsService {
         ...(fotoEvidenciaUrl && { fotoEvidenciaUrl }),
       },
     });
+
+    // Auditoría de cambio de estado
+    await this.prisma.auditLog.create({
+      data: {
+        reporteId: id,
+        usuarioId: usuario.sub,
+        estadoAnterior: reporte.estado,
+        estadoNuevo: dto.estado,
+        comentario: dto.comentarioResolucion || 'Cambio de estado',
+      },
+    });
+
+    return updatedReporte;
   }
 
   async findMine(usuarioId: string): Promise<Reporte[]> {

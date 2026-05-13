@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Usuario } from '../../generated/prisma/client';
+import { Usuario } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 type UsuarioSinPassword = Omit<Usuario, 'password'>;

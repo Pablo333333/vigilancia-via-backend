@@ -4,6 +4,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
 import { AuthModule } from './auth/auth.module';
 import { ComunicadosModule } from './comunicados/comunicados.module';
+import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReportsModule } from './reports/reports.module';
 import { UploadModule } from './upload/upload.module';
@@ -43,6 +44,7 @@ import { UsersModule } from './users/users.module';
     ReportsModule,
     ComunicadosModule,
     UploadModule,
+    MailModule,
   ],
 })
 export class AppModule {}

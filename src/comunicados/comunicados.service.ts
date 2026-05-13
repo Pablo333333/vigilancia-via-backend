@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Comunicado } from '../../generated/prisma/client';
+import { Comunicado } from '@prisma/client';
 import type { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateComunicadoDto } from './dto/create-comunicado.dto';

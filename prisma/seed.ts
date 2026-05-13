@@ -11,7 +11,7 @@ import 'dotenv/config';
 
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
-import { PrismaClient } from '../generated/prisma/client.js';
+import { PrismaClient } from '@prisma/client';
 
 // ─── Usuarios de prueba ────────────────────────────────────────────────────────
 

@@ -2,8 +2,7 @@
 // Generador: prisma-client (Prisma v7)
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -48,6 +47,7 @@ model Usuario {
 
   reportes    Reporte[]
   comunicados Comunicado[]
+  auditLogs   AuditLog[]
 
   @@map("usuarios")
 }
@@ -55,6 +55,7 @@ model Usuario {
 model Reporte {
   id                   String        @id @default(uuid())
   tipoProblema         TipoProblema
+  zona                 String?
   comentario           String?
   fotoUrl              String?
   latitud              Float
@@ -69,7 +70,23 @@ model Reporte {
   reportanteId  String?
   reportante    Usuario?      @relation(fields: [reportanteId], references: [id])
 
+  auditLogs     AuditLog[]
+
   @@map("reportes")
+}
+
+model AuditLog {
+  id            String        @id @default(uuid())
+  reporteId     String
+  reporte       Reporte       @relation(fields: [reporteId], references: [id])
+  usuarioId     String?
+  usuario       Usuario?      @relation(fields: [usuarioId], references: [id])
+  estadoAnterior EstadoReporte?
+  estadoNuevo    EstadoReporte
+  fecha         DateTime      @default(now())
+  comentario    String?
+
+  @@map("audit_logs")
 }
 
 model Comunicado {

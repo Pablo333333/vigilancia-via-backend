@@ -1,10 +1,14 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { TipoProblema } from '../../../generated/prisma/client';
+import { TipoProblema } from '@prisma/client';
 
 export class CreateReportDto {
   @IsEnum(TipoProblema)
   tipoProblema: TipoProblema;
+
+  @IsOptional()
+  @IsString()
+  zona?: string;
 
   @IsOptional()
   @IsString()

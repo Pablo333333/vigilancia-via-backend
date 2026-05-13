@@ -6,7 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import type { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { SavePushTokenDto } from './dto/save-push-token.dto';
 import { UsersService } from './users.service';
-import { Rol } from '../../generated/prisma/client';
+import { Rol } from '@prisma/client';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
