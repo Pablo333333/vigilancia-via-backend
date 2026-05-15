@@ -15,6 +15,7 @@ import { EstadoReporte, Rol } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import type { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { multerOptions } from '../upload/upload.config';
@@ -28,6 +29,7 @@ export class ReportsController {
 
   // POST /reports — Usuarios autenticados o Invitados (Anónimos)
   @Post()
+  @UseGuards(OptionalJwtAuthGuard)
   @UseInterceptors(FileInterceptor('foto', multerOptions))
   create(
     @Body() dto: CreateReportDto,
