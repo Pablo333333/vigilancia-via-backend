@@ -66,7 +66,7 @@ export class ReportsService {
     this.notifyResponsables(reporte.id, dto.tipoProblema).catch(() => null);
 
     // Enviar correo a los responsables para TODOS los reportes
-    this.sendNewReportEmails(reporte).catch(() => null);
+    // this.sendNewReportEmails(reporte).catch(() => null);
 
     return reporte;
   }
